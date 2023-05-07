@@ -93,7 +93,7 @@ impl Parser {
                 value = n;
                 self.lexer.consume(Token::Number(n)).unwrap();
             }
-            _ => panic!("Error: unknown symbol"),
+            _ => panic!("Error: unexpected symbol"),
         };
 
         value

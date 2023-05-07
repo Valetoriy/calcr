@@ -9,7 +9,6 @@ pub enum Token {
     Div,
     Pow,
     Fact,
-    End,
 }
 
 pub struct Lexer {
@@ -36,7 +35,6 @@ impl Lexer {
         }
 
         let Some(&c) = self.chars.get(self.pos) else {
-            self.token = End;
             return;
         };
         self.pos += 1;

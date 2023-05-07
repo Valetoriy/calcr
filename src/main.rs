@@ -6,7 +6,7 @@ fn main() {
     loop {
         let mut line = String::new();
         stdin.read_line(&mut line).unwrap();
-        if line.is_empty() {
+        if line.trim().is_empty() {
             break;
         }
 
