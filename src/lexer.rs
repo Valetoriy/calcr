@@ -26,7 +26,7 @@ impl Lexer {
         }
     }
 
-    pub fn next(&mut self) {
+    pub fn next(&mut self) -> Result<(), String> {
         while let Some(c) = self.chars.get(self.pos) {
             if !c.is_whitespace() {
                 break;
@@ -35,7 +35,7 @@ impl Lexer {
         }
 
         let Some(&c) = self.chars.get(self.pos) else {
-            return;
+            return Ok(());
         };
         self.pos += 1;
 
@@ -61,16 +61,18 @@ impl Lexer {
             '/' => Div,
             '^' => Pow,
             '!' => Fact,
-            _ => return,
+            s => return Err(format!("Unexpected symbol {s}")),
         };
+
+        Ok(())
     }
 
     pub fn consume(&mut self, token: Token) -> Result<(), String> {
         if self.token != token {
-            return Err(format!("Error: expected {token:?}, got {:?}", self.token));
+            return Err(format!("Expected {token:?}, got {:?}", self.token));
         }
 
-        self.next();
+        self.next()?;
         Ok(())
     }
 }

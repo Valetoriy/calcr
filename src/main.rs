@@ -12,7 +12,9 @@ fn main() {
 
         let lexer = Lexer::new(&line);
         let mut parser = Parser::new(lexer);
-        let res = parser.expr();
-        println!("{res}");
+        match parser.eval() {
+            Ok(res) => println!("{res}"),
+            Err(e) => println!("{e}"),
+        }
     }
 }
