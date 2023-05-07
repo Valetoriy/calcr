@@ -14,7 +14,7 @@ fn main() {
         let mut parser = Parser::new(lexer);
         match parser.eval() {
             Ok(res) => println!("{res}"),
-            Err(e) => println!("{e}"),
+            Err(e) => println!("ERROR: {e}"),
         }
     }
 }
