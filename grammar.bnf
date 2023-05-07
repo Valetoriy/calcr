@@ -1,7 +1,13 @@
-<start>       ::== <expression>
+<expr> ::= <mul_div> <expr_tail>
 
-<expression>  ::== <expr-paren> | <expr-binary> | NUMBER
+<expr_tail> ::= + <mul_div> <expr_tail> | - <mul_div> <expr_tail> | EMPTY
 
-<expr-paren>  ::== "(" <expression> ")"
-<expr-binary> ::== <expression> <binary> <expression>
-<binary>      ::== "+" | "-" | "*" | "/" | "^"
+<mul_div> ::= <pow_fac> <mul_div_tail>
+
+<mul_div_tail> ::= * <pow_fac> <mul_div_tail> | / <pow_fac> <mul_div_tail> | EMPTY
+
+<pow_fac> ::= <new_expr> <pow_fac_tail>
+
+<pow_fac_tail> ::= ^ <new_expr> <pow_fac_tail> | ! | EMPTY
+
+<new_expr> ::= ( <expr> ) | NUMBER
