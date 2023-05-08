@@ -58,7 +58,7 @@ impl Parser {
                     self.lexer.consume(Fact)?;
                     lvalue = (1..=lvalue).product();
                 }
-                Number(_) => return Ok(lvalue), // конец выражения
+                Number(_) | Rparen => return Ok(lvalue), // конец выражения
                 _ => unreachable!(),
             }
         }
