@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Token {
     Number(i64),
     Lparen,
@@ -9,6 +9,18 @@ pub enum Token {
     Div,
     Pow,
     Fact,
+}
+
+impl Token {
+    pub fn prec_lvl(&self) -> usize {
+        use Token::*;
+        match self {
+            Number(_) | Lparen | Rparen => 0, // не учавствуют в битве приоритетов
+            Plus | Minus => 1,
+            Mult | Div => 2,
+            Pow | Fact => 3,
+        }
+    }
 }
 
 pub struct Lexer {

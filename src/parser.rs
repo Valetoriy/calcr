@@ -12,95 +12,57 @@ impl Parser {
     pub fn eval(&mut self) -> Result<i64, String> {
         self.lexer.next()?;
 
-        self.expr()
+        self.expr(0)
     }
 
-    fn expr(&mut self) -> Result<i64, String> {
-        let lhs = self.mul_div()?;
+    fn expr(&mut self, prec_lvl: usize) -> Result<i64, String> {
+        let mut lvalue: i64;
 
-        self.expr_tail(lhs)
-    }
-
-    fn expr_tail(&mut self, lhs: i64) -> Result<i64, String> {
+        use Token::*;
         match self.lexer.token {
-            Token::Plus => {
-                self.lexer.consume(Token::Plus)?;
-                let lhs = lhs + self.mul_div()?;
-
-                self.expr_tail(lhs)
+            Number(n) => {
+                self.lexer.consume(Number(n))?;
+                lvalue = n;
             }
-            Token::Minus => {
-                self.lexer.consume(Token::Minus)?;
-                let lhs = lhs - self.mul_div()?;
-
-                self.expr_tail(lhs)
+            Lparen => {
+                self.lexer.consume(Lparen)?;
+                lvalue = self.expr(0)?;
+                self.lexer.consume(Rparen)?;
             }
-            _ => Ok(lhs),
+            u => return Err(format!("Unexpected token {u:?}")),
         }
-    }
 
-    fn mul_div(&mut self) -> Result<i64, String> {
-        let lhs = self.pow_fac()?;
-
-        self.mul_div_tail(lhs)
-    }
-
-    fn mul_div_tail(&mut self, lhs: i64) -> Result<i64, String> {
-        match self.lexer.token {
-            Token::Mult => {
-                self.lexer.consume(Token::Mult)?;
-                let lhs = lhs * self.pow_fac()?;
-
-                self.mul_div_tail(lhs)
+        while self.lexer.token.prec_lvl() >= prec_lvl {
+            match self.lexer.token {
+                Plus => {
+                    self.lexer.consume(Plus)?;
+                    lvalue += self.expr(Plus.prec_lvl() + 1)?;
+                }
+                Minus => {
+                    self.lexer.consume(Minus)?;
+                    lvalue -= self.expr(Minus.prec_lvl() + 1)?;
+                }
+                Mult => {
+                    self.lexer.consume(Mult)?;
+                    lvalue *= self.expr(Mult.prec_lvl() + 1)?;
+                }
+                Div => {
+                    self.lexer.consume(Div)?;
+                    lvalue /= self.expr(Div.prec_lvl() + 1)?;
+                }
+                Pow => {
+                    self.lexer.consume(Pow)?;
+                    lvalue = lvalue.pow(self.expr(Pow.prec_lvl() + 1)? as _);
+                }
+                Fact => {
+                    self.lexer.consume(Fact)?;
+                    lvalue = (1..=lvalue).product();
+                }
+                Number(_) => return Ok(lvalue), // конец выражения
+                _ => unreachable!(),
             }
-            Token::Div => {
-                self.lexer.consume(Token::Div)?;
-                let lhs = lhs / self.pow_fac()?;
-
-                self.mul_div_tail(lhs)
-            }
-            _ => Ok(lhs),
         }
-    }
 
-    fn pow_fac(&mut self) -> Result<i64, String> {
-        let lhs = self.new_expr()?;
-
-        self.pow_fac_tail(lhs)
-    }
-
-    fn pow_fac_tail(&mut self, lhs: i64) -> Result<i64, String> {
-        match self.lexer.token {
-            Token::Pow => {
-                self.lexer.consume(Token::Pow)?;
-                let lhs = lhs.pow(self.new_expr()? as _);
-
-                self.pow_fac_tail(lhs)
-            }
-            Token::Fact => {
-                self.lexer.consume(Token::Fact)?;
-
-                Ok((1..=lhs).product())
-            }
-            _ => Ok(lhs),
-        }
-    }
-
-    fn new_expr(&mut self) -> Result<i64, String> {
-        let value;
-        match self.lexer.token {
-            Token::Lparen => {
-                self.lexer.consume(Token::Lparen)?;
-                value = self.expr()?;
-                self.lexer.consume(Token::Rparen)?;
-            }
-            Token::Number(n) => {
-                value = n;
-                self.lexer.consume(Token::Number(n))?;
-            }
-            ref u => return Err(format!("Unexpected token {u:?}")),
-        };
-
-        Ok(value)
+        Ok(lvalue)
     }
 }
