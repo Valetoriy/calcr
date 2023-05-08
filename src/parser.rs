@@ -26,7 +26,7 @@ impl Parser {
             }
             Lparen => {
                 self.lexer.consume(Lparen)?;
-                lvalue = self.expr(0)?;
+                lvalue = self.expr(Lparen.prec_lvl())?;
                 self.lexer.consume(Rparen)?;
             }
             u => return Err(format!("Unexpected token {u:?}")),
@@ -58,8 +58,15 @@ impl Parser {
                     self.lexer.consume(Fact)?;
                     lvalue = (1..=lvalue).product();
                 }
-                Number(_) | Rparen => return Ok(lvalue), // конец выражения
-                _ => unreachable!(),
+                Rparen => {
+                    if prec_lvl != Lparen.prec_lvl() {
+                        return Err(format!("Unexpected token Rparen"));
+                    } else {
+                        return Ok(lvalue);
+                    };
+                }
+                End => return Ok(lvalue),
+                u => return Err(format!("Unexpected token {u:?}")),
             }
         }
 

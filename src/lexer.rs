@@ -9,16 +9,18 @@ pub enum Token {
     Div,
     Pow,
     Fact,
+
+    End,
 }
 
 impl Token {
     pub fn prec_lvl(&self) -> usize {
         use Token::*;
         match self {
-            Number(_) | Lparen | Rparen => 0, // не учавствуют в битве приоритетов
-            Plus | Minus => 1,
-            Mult | Div => 2,
-            Pow | Fact => 3,
+            Number(_) | Lparen | Rparen | End => 1, // не учавствуют в битве приоритетов
+            Plus | Minus => 2,
+            Mult | Div => 3,
+            Pow | Fact => 4,
         }
     }
 }
@@ -47,6 +49,7 @@ impl Lexer {
         }
 
         let Some(&c) = self.chars.get(self.pos) else {
+            self.token = End;
             return Ok(());
         };
         self.pos += 1;
